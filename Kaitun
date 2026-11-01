@@ -782,7 +782,7 @@ task.spawn(function()
         return
     end
 
-    Window = Rayfield:CreateWindow({
+    local Window = Rayfield:CreateWindow({
         Name = "Lumu Sidd Hub | Beast Hunter Kaitun",
         LoadingTitle = "Lumu Sidd Hub",
         LoadingSubtitle = "by Lumu & Siddhant",
@@ -865,8 +865,8 @@ task.spawn(function()
         Rayfield:LoadConfiguration()
         local flags = Rayfield.Flags
         if flags then
-            if flags.AutoBeastHunter` ~= nil then
-                AutoFarmEnabled = flags.AutoBeastHunter.CurrentValue
+            if flags.AutoBeastHunterFarm ~= nil then
+                AutoFarmEnabled = flags.AutoBeastHunterFarm.CurrentValue
             end
             if flags.FastAttackOption ~= nil then
                 FAST_ATTACK_MODE = flags.FastAttackOption.CurrentValue
