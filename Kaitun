@@ -1,5 +1,5 @@
 --[[
-    Lumu Sidd Hub - Sea Events Kaitun (Beast Hunter & Smart Skill Dodge) with Rayfield UI
+    Siddhant C Event and PVP Hub - Sea Events Kaitun (Beast Hunter & Smart Skill Dodge) with Rayfield UI
     Cracked By Horus&PaLiTos
 ]]
 
@@ -771,110 +771,626 @@ local function Cycle()
     end
 end
 
--- Rayfield UI Integration with Configuration Sync and Full Event Cleanup
-task.spawn(function()
-    local success, Rayfield = pcall(function()
-        return loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-    end)
+-- WindUI Initialization & Config Variables
+local HttpService = game:GetService("HttpService")
+local UIS = game:GetService("UserInputService")
+local CONFIG_FILE = "RJR_NEW_C.json"
 
-    if not success or not Rayfield then
-        warn("[Lumu Sidd Hub] Failed to load Rayfield UI library.")
+_G.G_FastAttack       = _G.G_FastAttack ~= true
+_G.G_FastAttackMode   = _G.G_FastAttackMode or "模式2(部分账号失效用)"
+_G.G_AttackMobs       = _G.G_AttackMobs ~= true
+_G.G_AttackPlayers    = _G.G_AttackPlayers ~= true
+_G.G_DragonGunM1      = _G.G_DragonGunM1 or false
+_G.G_FruitM1          = _G.G_FruitM1 or false
+_G.G_AutoHaki         = _G.G_AutoHaki or false
+_G.G_AutoV3           = _G.G_AutoV3 or false
+_G.G_AutoV4           = _G.G_AutoV4 or false
+_G.G_AutoFlee         = _G.G_AutoFlee or false
+_G.G_AutoFleeHP       = _G.G_AutoFleeHP or 30
+_G.G_translateSpeed   = _G.G_translateSpeed or 50
+_G.G_translateAccel   = _G.G_translateAccel or false
+_G.G_jumpHeight       = _G.G_jumpHeight or 50
+_G.G_jumpEnabled      = _G.G_jumpEnabled or false
+_G.G_Fly              = _G.G_Fly or false
+_G.G_ESPEnabled       = _G.G_ESPEnabled ~= false
+_G.G_ESP_Name         = _G.G_ESP_Name ~= false
+_G.G_ESP_Level        = _G.G_ESP_Level ~= false
+_G.G_ESP_Bounty       = _G.G_ESP_Bounty ~= false
+_G.G_ESP_Fruit        = _G.G_ESP_Fruit ~= false
+_G.G_ESP_Distance     = _G.G_ESP_Distance ~= false
+_G.G_ESP_HP           = _G.G_ESP_HP ~= false
+_G.G_ESP_TextSize     = _G.G_ESP_TextSize or 14
+_G.G_ESP_Highlight    = _G.G_ESP_Highlight or false
+_G.G_ESP_HighlightColor = _G.G_ESP_HighlightColor or "FF0000"
+
+-- Misc
+_G.G_currentZoom      = _G.G_currentZoom or 0
+_G.G_DodgeNoCooldown  = _G.G_DodgeNoCooldown or false
+_G.G_DashLengthEnabled= _G.G_DashLengthEnabled or false
+_G.G_DashLength       = _G.G_DashLength or 5
+_G.G_RemoveLava       = _G.G_RemoveLava or false
+_G.G_RemoveFog        = _G.G_RemoveFog or false
+_G.G_RemoveAnim       = _G.G_RemoveAnim or false
+_G.G_RemoveGhostShip  = _G.G_RemoveGhostShip or false
+_G.G_WalkOnWater      = _G.G_WalkOnWater or false
+_G.G_spinEnabled      = _G.G_spinEnabled or false
+_G.G_spinSpeed        = _G.G_spinSpeed or 10
+_G.G_AutoFpsLock      = _G.G_AutoFpsLock or false
+_G.G_NoMove           = _G.G_NoMove or false
+
+_G.G_TeleportOffsetX  = _G.G_TeleportOffsetX or 0
+_G.G_TeleportOffsetY  = _G.G_TeleportOffsetY or 0
+_G.G_TeleportOffsetZ  = _G.G_TeleportOffsetZ or 0
+_G.G_SelectPly        = _G.G_SelectPly or ""
+_G.G_TeleportPly      = _G.G_TeleportPly or false
+_G.G_Teleport         = _G.G_Teleport or false
+_G.G_Lock2            = _G.G_Lock2 or false
+_G.G_TeleportPredict  = _G.G_TeleportPredict or false
+_G.G_SpectatePlys     = _G.G_SpectatePlys or false
+
+_G.G_ServerRegion       = _G.G_ServerRegion or "Singapore"
+
+_G.G_SilentAimM1R   = _G.G_SilentAimM1R or false
+_G.G_SilentAimSkill = _G.G_SilentAimSkill or false
+_G.G_SilentAimShowFOV = _G.G_SilentAimShowFOV or false
+_G.G_SilentAimFOV     = _G.G_SilentAimFOV or 100
+_G.G_SilentAimPart    = _G.G_SilentAimPart or "Head"
+_G.G_SilentAimFOVThickness = _G.G_SilentAimFOVThickness or 2
+_G.G_SilentAimFOVTransparency = _G.G_SilentAimFOVTransparency or 1
+_G.G_SilentAimTargetPlayers = _G.G_SilentAimTargetPlayers or false
+_G.G_SilentAimTargetMobs    = _G.G_SilentAimTargetMobs or false
+_G.G_SilentAimShowLine      = _G.G_SilentAimShowLine or false
+_G.G_SilentAimFOVMode       = _G.G_SilentAimFOVMode or "跟随鼠标"
+_G.G_SilentAimTeamCheck     = _G.G_SilentAimTeamCheck or false
+_G.G_SilentAimMethod        = _G.G_SilentAimMethod or "鼠标最近的玩家"
+_G.G_LockHotkey              = _G.G_LockHotkey or false
+_G.G_LockHotkeyMode          = _G.G_LockHotkeyMode or "锁人1"
+
+_G.G_AutoLoadConfig   = _G.G_AutoLoadConfig or false
+_G.G_AutoSaveConfig   = _G.G_AutoSaveConfig or false
+_G.G_Theme            = _G.G_Theme or "Light"
+_G.G_Language         = _G.G_Language or "中文"
+
+local Translations = {
+    ["中文"] = {},
+    ["English"] = {
+        ["人挤人中心"] = "Siddhant C Event and PVP Hub",
+        ["自动"] = "Farm",
+        ["主要功能"] = "Main",
+        ["杀戮光环"] = "Aura",
+        ["ESP"] = "ESP",
+        ["绘制"] = "Aimbot",
+        ["传送"] = "Teleport",
+        ["杂项"] = "Misc",
+        ["服务器"] = "Server",
+        ["设置"] = "Settings",
+        ["FOV"] = "FOV",
+        ["开启快速攻击"] = "Enable Fast Attack",
+        ["快速攻击模式"] = "Fast Attack Mode",
+        ["攻击怪物(此页面所有功能)"] = "Attack Mobs (All features)",
+        ["攻击玩家(此页面所有功能)"] = "Attack Players (All features)",
+        ["枪械 m1"] = "Dragon Gun M1",
+        ["果实m1"] = "Fruit M1",
+        ["移动速度"] = "Move Speed",
+        ["加速开关"] = "Speed Boost",
+        ["跳跃高度"] = "Jump Height",
+        ["高跳开启"] = "High Jump",
+        ["飞行"] = "Fly",
+        ["自动武装色"] = "Auto Haki",
+        ["自动 V3"] = "Auto V3",
+        ["自动 V4"] = "Auto V4",
+        ["自动逃跑"] = "Auto Flee",
+        ["逃跑血量阈值(%)"] = "Flee HP Threshold (%)",
+        ["ESP 开关"] = "ESP Toggle",
+        ["显示玩家名字"] = "Show Player Name",
+        ["显示玩家等级"] = "Show Player Level",
+        ["显示玩家赏金"] = "Show Bounty",
+        ["显示恶魔果实"] = "Show Devil Fruit",
+        ["显示距离"] = "Show Distance",
+        ["显示血量"] = "Show HP",
+        ["高亮显示玩家"] = "Highlight Players",
+        ["高亮颜色"] = "Highlight Color",
+        ["ESP 字体大小"] = "ESP Text Size",
+        ["视角缩放距离"] = "Camera Zoom",
+        ["冲刺无冷却"] = "Dodge No Cooldown",
+        ["冲刺距离修改开关"] = "Dash Length Toggle",
+        ["冲刺距离"] = "Dash Length",
+        ["减画质"] = "Reduce Graphics",
+        ["移除岩浆 (需重进恢复)"] = "Remove Lava (Rejoin to restore)",
+        ["移除雾 (需重进恢复)"] = "Remove Fog (Rejoin to restore)",
+        ["移除玩家动作 (僵直)"] = "Remove Player Anim (Stun)",
+        ["移除鬼船 (保留传送点)"] = "Remove Ghost Ship (Keep TP)",
+        ["水上行走"] = "Walk on Water",
+        ["解帧数限制 (仅电脑)"] = "Unlock FPS (PC only)",
+        ["自动血拳卡帧"] = "Auto Blood FPS Lock",
+        ["旋转"] = "Spin",
+        ["旋转速度"] = "Spin Speed",
+        ["反移动(释放技能不移动)"] = "Anti-Move (Skill no move)",
+        ["重进服务器"] = "Rejoin Server",
+        ["选择服务器区域"] = "Select Server Region",
+        ["跳服"] = "Server Hop",
+        ["服务器id"] = "Server ID",
+        ["输入服务器id"] = "Enter Server ID",
+        ["加入服务器 id"] = "Join Server ID",
+        ["选择主题"] = "Select Theme",
+        ["自动保存配置"] = "Auto Save Config",
+        ["进游戏自动加载配置"] = "Auto Load Config",
+        ["保存配置"] = "Save Config",
+        ["加载配置"] = "Load Config",
+        ["窗口切换键"] = "Toggle Window Key",
+        ["选择目标玩家"] = "Select Target Player",
+        ["刷新玩家列表"] = "Refresh Player List",
+        ["观战玩家"] = "Spectate Player",
+        ["平滑传送至玩家"] = "Smooth TP to Player",
+        ["直接传送至玩家"] = "Direct TP to Player",
+        ["锁人2"] = "Lock 2",
+        ["锁人预判 (对抗飞行)"] = "Lock Predict (Anti-Fly)",
+        ["X轴偏移"] = "X Offset",
+        ["Y轴偏移"] = "Y Offset",
+        ["Z轴偏移"] = "Z Offset",
+        ["自瞄范围设置"] = "Aimbot Range Settings",
+        ["显示 FOV 范围"] = "Show FOV Range",
+        ["FOV 位置"] = "FOV Position",
+        ["FOV 半径大小"] = "FOV Radius",
+        ["FOV 范围颜色"] = "FOV Range Color",
+        ["自瞄设置"] = "Aimbot Settings",
+        ["M1 自瞄"] = "M1 Aimbot",
+        ["技能自瞄"] = "Skill Aimbot",
+        ["瞄准玩家"] = "Target Players",
+        ["瞄准 NPC"] = "Target NPCs",
+        ["团队检测"] = "Team Check",
+        ["显示锁定红线"] = "Show Lock Line",
+        ["瞄准部位"] = "Target Part",
+        ["静默瞄准方法"] = "Silent Aim Method",
+        ["鼠标最近的玩家"] = "Closest to Mouse",
+        ["最近的玩家"] = "Closest Player",
+        ["选择玩家"] = "Selected Player",
+        ["快捷键锁人(按键h)"] = "Hotkey Lock (Press H)",
+        ["锁人模式"] = "Lock Mode",
+        ["语言"] = "Language",
+        ["中文"] = "Chinese",
+        ["语言已切换为: 中文"] = "Language switched to: Chinese",
+        ["语言已切换为: English"] = "Language switched to: English",
+    }
+}
+
+local function L(text)
+    if _G.G_Language == "English" and Translations["English"][text] then
+        return Translations["English"][text]
+    end
+    return text
+end
+
+local function CollectConfig()
+    return {
+        Attack = {
+            FastAttack     = _G.G_FastAttack,
+            FastAttackMode = _G.G_FastAttackMode,
+            AttackMobs     = _G.G_AttackMobs,
+            AttackPlayers  = _G.G_AttackPlayers,
+            DragonGunM1    = _G.G_DragonGunM1,
+            FruitM1        = _G.G_FruitM1,
+        },
+        Auto = {
+            AutoHaki = _G.G_AutoHaki,
+            AutoV3   = _G.G_AutoV3,
+            AutoV4   = _G.G_AutoV4,
+            AutoFlee = _G.G_AutoFlee,
+            AutoFleeHP = _G.G_AutoFleeHP,
+        },
+        Main = {
+            translateSpeed   = _G.G_translateSpeed,
+            translateAccel   = _G.G_translateAccel,
+            jumpHeight       = _G.G_jumpHeight,
+            jumpEnabled      = _G.G_jumpEnabled,
+            Fly              = _G.G_Fly,
+        },
+        ESP = {
+            ESPEnabled   = _G.G_ESPEnabled,
+            ESP_Name     = _G.G_ESP_Name,
+            ESP_Level    = _G.G_ESP_Level,
+            ESP_Bounty   = _G.G_ESP_Bounty,
+            ESP_Fruit    = _G.G_ESP_Fruit,
+            ESP_Distance = _G.G_ESP_Distance,
+            ESP_HP       = _G.G_ESP_HP,
+            ESP_TextSize = _G.G_ESP_TextSize,
+            ESP_Highlight = _G.G_ESP_Highlight,
+            ESP_HighlightColor = _G.G_ESP_HighlightColor,
+        },
+        Misc = {
+            currentZoom         = _G.G_currentZoom,
+            DodgeNoCooldown     = _G.G_DodgeNoCooldown,
+            DashLengthEnabled   = _G.G_DashLengthEnabled,
+            DashLength          = _G.G_DashLength,
+            RemoveLava      = _G.G_RemoveLava,
+            RemoveFog       = _G.G_RemoveFog,
+            RemoveAnim      = _G.G_RemoveAnim,
+            RemoveGhostShip = _G.G_RemoveGhostShip,
+            WalkOnWater     = _G.G_WalkOnWater,
+            spinEnabled     = _G.G_spinEnabled,
+            spinSpeed       = _G.G_spinSpeed,
+            AutoFpsLock     = _G.G_AutoFpsLock,
+            NoMove          = _G.G_NoMove,
+            TeleportOffsetX = _G.G_TeleportOffsetX,
+            TeleportOffsetY = _G.G_TeleportOffsetY,
+            TeleportOffsetZ = _G.G_TeleportOffsetZ,
+            TeleportPredict = _G.G_TeleportPredict,
+        },
+        Server = {
+            ServerRegion = _G.G_ServerRegion,
+        },
+        Drawing = {
+            SilentAimM1R   = _G.G_SilentAimM1R,
+            SilentAimSkill = _G.G_SilentAimSkill,
+            SilentAimShowFOV = _G.G_SilentAimShowFOV,
+            SilentAimFOV     = _G.G_SilentAimFOV,
+            SilentAimPart    = _G.G_SilentAimPart,
+            SilentAimFOVThickness = _G.G_SilentAimFOVThickness,
+            SilentAimFOVTransparency = _G.G_SilentAimFOVTransparency,
+            SilentAimTargetPlayers = _G.G_SilentAimTargetPlayers,
+            SilentAimTargetMobs    = _G.G_SilentAimTargetMobs,
+            SilentAimShowLine      = _G.G_SilentAimShowLine,
+            SilentAimFOVMode       = _G.G_SilentAimFOVMode,
+            SilentAimTeamCheck     = _G.G_SilentAimTeamCheck,
+            SilentAimMethod        = _G.G_SilentAimMethod,
+            LockHotkey             = _G.G_LockHotkey,
+            LockHotkeyMode         = _G.G_LockHotkeyMode,
+        },
+        Setting = {
+            AutoLoadConfig = _G.G_AutoLoadConfig,
+            AutoSaveConfig = _G.G_AutoSaveConfig,
+        },
+        UI = {
+            Theme = _G.G_Theme,
+            Language = _G.G_Language
+        }
+    }
+end
+
+function SaveConfiguration()
+    local data = CollectConfig()
+    writefile(CONFIG_FILE, HttpService:JSONEncode(data))
+end
+
+function LoadConfiguration()
+    if not isfile(CONFIG_FILE) then return end
+    local data = HttpService:JSONDecode(readfile(CONFIG_FILE))
+    for section, values in pairs(data) do
+        for k, v in pairs(values) do
+            _G["G_" .. k] = v
+        end
+    end
+end
+pcall(LoadConfiguration)
+
+_G.FOVMode = _G.G_SilentAimFOVMode or "跟随鼠标"
+local WindUI = loadstring(request({
+    Url = "https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"
+}).Body)()
+
+WindUI:SetTheme(_G.G_Theme)
+
+local Window = WindUI:CreateWindow({
+    Title = L("人挤人中心"),
+    Icon = "",
+    Author = "by Siddhant",
+    Folder = "WindUI",
+    Size = UDim2.fromOffset(580, 460),
+    Transparent = true,
+    Theme = _G.G_Theme,
+    Acrylic = false,
+    HideSearchBar = false,
+    SideBarWidth = 200,
+    OpenButton = {
+        Title = "Siddhant Hub",
+        CornerRadius = UDim.new(1, 0),
+        StrokeThickness = 3,
+        Enabled = true,
+        OnlyMobile = false,
+        Draggable = true,
+        OnlyIcon = false,
+        Color = ColorSequence.new(
+            Color3.fromHex("#FF4444"),
+            Color3.fromHex("#FF8800")
+        ),
+    },
+    ToggleKey = Enum.KeyCode.G,
+})
+
+local Tabs = {
+    [L("自动")] = Window:Section({ Title = L("自动"), Opened = true }),
+    [L("主要功能")] = Window:Section({ Title = L("主要功能"), Opened = true }),
+    [L("设置")] = Window:Section({ Title = L("设置"), Opened = true }),
+}
+
+local RJR = {
+    [L("自动")]     = Tabs[L("自动")]:Tab({ Title = L("自动"), Icon = "cpu" }),
+    [L("主要功能")] = Tabs[L("主要功能")]:Tab({ Title = L("主要功能"), Icon = "zap" }),
+    [L("杀戮光环")] = Tabs[L("主要功能")]:Tab({ Title = L("杀戮光环"), Icon = "sword" }),
+    ["ESP"]     = Tabs[L("主要功能")]:Tab({ Title = "ESP", Icon = "eye" }),
+    [L("绘制")]     = Tabs[L("主要功能")]:Tab({ Title = L("FOV"), Icon = "pen-tool" }),
+    [L("传送")]     = Tabs[L("主要功能")]:Tab({ Title = L("传送"), Icon = "users" }),
+    [L("杂项")]     = Tabs[L("主要功能")]:Tab({ Title = L("杂项"), Icon = "list" }),
+    [L("商店")]     = Tabs[L("主要功能")]:Tab({ Title = L("商店"), Icon = "shopping-cart" }),
+    [L("服务器")]   = Tabs[L("设置")]:Tab({ Title = L("服务器"), Icon = "server" }),
+    [L("设置")]     = Tabs[L("设置")]:Tab({ Title = L("设置"), Icon = "settings" }),
+}
+
+-- Populate Farm Tab with Sea Events Kaitun / Beast Hunter Status & Toggles
+RJR[L("自动")]:Section({ Title = "Sea Events & Beast Hunter Farm" })
+
+local StatusLabel = RJR[L("自动")]:Label("Status: Initializing...")
+StatusTextUpdate = function(text)
+    pcall(function() StatusLabel:Set("Status: " .. text) end)
+end
+
+RJR[L("自动")]:Toggle({
+    Title = "Auto Sea Events Farm (Beast Hunter)",
+    CurrentValue = AutoFarmEnabled,
+    Flag = "AutoBeastHunterFarm",
+    Callback = function(Value)
+        AutoFarmEnabled = Value
+        if Value then
+            SetStatus("Resumed")
+        else
+            SetStatus("Paused by User")
+            Fighting = false
+        end
+    end,
+})
+
+RJR[L("自动")]:Dropdown({
+    Title = "Fast Attack Mode",
+    Values = {"1", "2"},
+    CurrentOption = FAST_ATTACK_MODE,
+    Flag = "FastAttackOption",
+    Callback = function(Option)
+        FAST_ATTACK_MODE = Option
+    end,
+})
+
+-- Rest of existing features/tabs implementation
+local function IsAlive(character)
+    if not character then return false end
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    return humanoid and humanoid.Health and humanoid.Health > 0
+end
+
+local function GetRandomValidPart(target)
+    if not target then return nil end
+    local hrp = target:FindFirstChild("HumanoidRootPart")
+    if not hrp then return nil end
+    local parts = { target:FindFirstChild("Head"), target:FindFirstChild("UpperTorso"), target:FindFirstChild("LowerTorso"), target:FindFirstChild("Torso"), hrp }
+    local validParts = {}
+    for _, p in ipairs(parts) do
+        if p and p:IsA("BasePart") then table.insert(validParts, p) end
+    end
+    if #validParts > 0 then return validParts[math.random(1, #validParts)] end
+    return hrp
+end
+
+local M1_State = { consecutiveFailures = 0, maxConsecutiveFailures = 5, Remotes = nil, Net = nil, RegisterAttack = nil, RegisterHit = nil, Enemies = nil }
+local function M1_CheckAndGetCoreComponents()
+    if M1_State.Remotes and M1_State.Net and M1_State.RegisterAttack and M1_State.RegisterHit and M1_State.Enemies then
+        return M1_State.Remotes, M1_State.Net, M1_State.RegisterAttack, M1_State.RegisterHit, M1_State.Enemies
+    end
+    local Remotes = RS:FindFirstChild("Remotes")
+    local Modules = RS:FindFirstChild("Modules")
+    local Net = Modules and Modules:FindFirstChild("Net")
+    local RegisterAttack = Net and (Net:FindFirstChild("RE/RegisterAttack") or Net:FindFirstChild("RegisterAttack"))
+    local RegisterHit = Net and (Net:FindFirstChild("RE/RegisterHit") or Net:FindFirstChild("RegisterHit"))
+    local Enemies = workspace:FindFirstChild("Enemies") or workspace:FindFirstChild("NPCs")
+    if Remotes and Modules and Net and RegisterAttack and RegisterHit and Enemies then
+        M1_State.Remotes = Remotes; M1_State.Net = Net; M1_State.RegisterAttack = RegisterAttack; M1_State.RegisterHit = RegisterHit; M1_State.Enemies = Enemies
+        return Remotes, Net, RegisterAttack, RegisterHit, Enemies
+    end
+    return nil, nil, nil, nil, nil
+end
+
+local function M1_ProcessEnemies(OthersEnemies, Folder)
+    if not Folder or not _G.G_AttackMobs then return nil end
+    local BasePart = nil
+    local myPos = LocalPlayer.Character and LocalPlayer.Character.PrimaryPart and LocalPlayer.Character.PrimaryPart.Position
+    if not myPos then return nil end
+    for _, Enemy in ipairs(Folder:GetChildren()) do
+        if Enemy == LocalPlayer.Character or not IsAlive(Enemy) then continue end
+        local enemyRoot = Enemy:FindFirstChild("HumanoidRootPart")
+        if not enemyRoot then continue end
+        if (enemyRoot.Position - myPos).Magnitude < 500 then
+             local foundPart = GetRandomValidPart(Enemy)
+             if foundPart then
+                table.insert(OthersEnemies, {Enemy, foundPart})
+                BasePart = foundPart
+             end
+        end
+    end
+    return BasePart
+end
+
+local function M1_ProcessRealPlayers(OthersEnemies)
+    if not _G.G_AttackPlayers then return nil end
+    local BasePart = nil
+    local myPos = LocalPlayer.Character and LocalPlayer.Character.PrimaryPart and LocalPlayer.Character.PrimaryPart.Position
+    if not myPos then return nil end
+    for _, OtherPlayer in ipairs(Players:GetPlayers()) do
+        if OtherPlayer == LocalPlayer then continue end
+        local OtherChar = OtherPlayer.Character
+        if not IsAlive(OtherChar) then continue end
+        local foundPart = GetRandomValidPart(OtherChar)
+        if foundPart and LocalPlayer:DistanceFromCharacter(foundPart.Position) < 500 then
+            table.insert(OthersEnemies, {OtherChar, foundPart})
+            BasePart = foundPart
+        end
+    end
+    return BasePart
+end
+
+local function M1_Attack(BasePart, OthersEnemies)
+    local _, Net, temp_RegisterAttack, temp_RegisterHit, _ = M1_CheckAndGetCoreComponents()
+    if not (BasePart and OthersEnemies and #OthersEnemies > 0 and temp_RegisterAttack and temp_RegisterHit) then
+        M1_State.consecutiveFailures = M1_State.consecutiveFailures + 1
+        if M1_State.consecutiveFailures >= M1_State.maxConsecutiveFailures then
+            M1_State.Remotes = nil; M1_State.Net = nil; M1_State.RegisterAttack = nil; M1_State.RegisterHit = nil; M1_State.Enemies = nil; M1_State.consecutiveFailures = 0
+        end
         return
     end
+    M1_State.consecutiveFailures = 0
+    local success, _ = pcall(function()
+        temp_RegisterAttack:FireServer(0.3)
+        temp_RegisterHit:FireServer(BasePart, OthersEnemies)
+    end)
+    if not success then M1_State.RegisterAttack = nil; M1_State.RegisterHit = nil end
+end
 
-    local Window = Rayfield:CreateWindow({
-        Name = "Lumu Sidd Hub | Beast Hunter Kaitun",
-        LoadingTitle = "Lumu Sidd Hub",
-        LoadingSubtitle = "by Lumu & Siddhant",
-        ConfigurationSaving = {
-            Enabled = true,
-            FolderName = "LumuSiddHub",
-            FileName = "BeastHunterConfig"
-        },
-        Discord = {
-            Enabled = true,
-            Invite = "cSthtkp5dD",
-            RememberJoins = true
-        },
-        KeySystem = false,
-    })
+local function PerformAttackMode1()
+    local _, _, _, _, Enemies = M1_CheckAndGetCoreComponents()
+    if not Enemies then M1_State.Enemies = nil; return end
+    local OthersEnemies = {}
+    local Part1 = M1_ProcessEnemies(OthersEnemies, Enemies)
+    local Part2 = M1_ProcessRealPlayers(OthersEnemies)
+    if #OthersEnemies > 0 then M1_Attack(Part1 or Part2, OthersEnemies) end
+end
 
-    local MainTab = Window:CreateTab("Main", 4483362458)
-    local SettingsTab = Window:CreateTab("Settings", 4483362458)
+local Settings = { Range = 5000, AttackSpeed = 0.05, AutoScanRemotes = true }
+local Net = RS:WaitForChild("Modules"):WaitForChild("Net")
+local RegisterAttack = Net:WaitForChild("RE/RegisterAttack")
+local RegisterHit = Net:WaitForChild("RE/RegisterHit")
+local RemoteSeed = Net:FindFirstChild("seed")
+local State = { FoundRemote = nil, FoundRemoteId = nil, LastAttack = 0 }
 
-    MainTab:CreateSection("Farm & Dodge Controls")
-
-    local StatusLabel = MainTab:CreateLabel("Status: Initializing...")
-    StatusTextUpdate = function(text)
-        pcall(function() StatusLabel:Set("Status: " .. text) end)
-    end
-
-    MainTab:CreateToggle({
-        Name = "Auto Sea Events Farm (Beast Hunter)",
-        CurrentValue = AutoFarmEnabled,
-        Flag = "AutoBeastHunterFarm",
-        Callback = function(Value)
-            AutoFarmEnabled = Value
-            if Value then
-                SetStatus("Resumed")
-            else
-                SetStatus("Paused by User")
-                Fighting = false
+if Settings.AutoScanRemotes then
+    task.spawn(function()
+        local folders = { RS:FindFirstChild("Util"), RS:FindFirstChild("Common"), RS:FindFirstChild("Remotes"), RS:FindFirstChild("Assets"), RS:FindFirstChild("FX") }
+        local function checkChild(child)
+            if child:IsA("RemoteEvent") and child:GetAttribute("Id") then
+                State.FoundRemoteId = child:GetAttribute("Id")
+                State.FoundRemote = child
             end
-        end,
-    })
-
-    MainTab:CreateDropdown({
-        Name = "Fast Attack Mode",
-        Options = {"1", "2"},
-        CurrentOption = FAST_ATTACK_MODE,
-        Flag = "FastAttackOption",
-        Callback = function(Option)
-            FAST_ATTACK_MODE = Option
-        end,
-    })
-
-    SettingsTab:CreateSection("Hub Utilities")
-
-    SettingsTab:CreateButton({
-        Name = "Copy Discord Link",
-        Callback = function()
-            pcall(function() setclipboard("https://discord.gg/cSthtkp5dD") end)
-            Rayfield:Notify({
-                Title = "Success",
-                Content = "Discord link copied to clipboard!",
-                Duration = 3,
-                Image = 4483362458,
-            })
-        end,
-    })
-
-    SettingsTab:CreateButton({
-        Name = "Unload Hub",
-        Callback = function()
-            env.TS_Gen = (env.TS_Gen or 0) + 1
-            Fighting = false
-            CleanupConnections()
-            StopBoatNoClip()
-            pcall(function() Rayfield:Destroy() end)
-            print("[Lumu Sidd Hub] Unloaded successfully.")
-        end,
-    })
-
-    pcall(function()
-        Rayfield:LoadConfiguration()
-        local flags = Rayfield.Flags
-        if flags then
-            if flags.AutoBeastHunterFarm ~= nil then
-                AutoFarmEnabled = flags.AutoBeastHunterFarm.CurrentValue
-            end
-            if flags.FastAttackOption ~= nil then
-                FAST_ATTACK_MODE = flags.FastAttackOption.CurrentValue
+        end
+        for _, folder in ipairs(folders) do
+            if folder then
+                for _, child in ipairs(folder:GetChildren()) do checkChild(child) end
+                folder.ChildAdded:Connect(checkChild)
             end
         end
     end)
+end
+
+local function GetTargets()
+    local char = LocalPlayer.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    if not root then return {} end
+    local targets = {}
+    local myPos = root.Position
+    local folders = {workspace:FindFirstChild("Enemies"), workspace:FindFirstChild("Characters")}
+    for _, folder in ipairs(folders) do
+        if not folder then continue end
+        for _, model in ipairs(folder:GetChildren()) do
+            if model == char then continue end
+            local tRoot = model:FindFirstChild("HumanoidRootPart")
+            local tHum = model:FindFirstChild("Humanoid")
+            if tRoot and tHum and tHum.Health > 0 then
+                local dist = (tRoot.Position - myPos).Magnitude
+                if dist <= Settings.Range then
+                    table.insert(targets, { Model = model, Root = tRoot, Head = model:FindFirstChild("Head") or tRoot })
+                end
+            end
+        end
+    end
+    return targets
+end
+
+local function PerformAttackMode2()
+    local char = LocalPlayer.Character
+    if not char then return end
+    local hasTool = char:FindFirstChildOfClass("Tool") or char:FindFirstChild("EquippedWeapon")
+    if not hasTool then return end
+    local targets = GetTargets()
+    if #targets == 0 then return end
+    local mainTarget = targets[1]
+    local hitList = {}
+    for i, target in ipairs(targets) do table.insert(hitList, {target.Model, target.Root}) end
+    RegisterAttack:FireServer()
+    local fakeHash = tostring(LocalPlayer.UserId):sub(2,4) .. tostring(math.random(10000, 99999))
+    pcall(function()
+        RegisterHit:FireServer(mainTarget.Head, hitList, {}, fakeHash)
+    end)
+    if State.FoundRemote and State.FoundRemoteId then
+        pcall(function()
+            local seedValue = RemoteSeed and RemoteSeed:InvokeServer() or 1
+            local encryptedId = bit32.bxor(State.FoundRemoteId + 909090, seedValue * 2)
+            local rawName = "RE/RegisterHit"
+            local timestamp = math.floor(workspace:GetServerTimeNow() / 10 % 10) + 1
+            local encryptedName = string.gsub(rawName, ".", function(c) return string.char(bit32.bxor(string.byte(c), timestamp)) end)
+            State.FoundRemote:FireServer(encryptedName, encryptedId, mainTarget.Head, hitList)
+        end)
+    end
+end
+
+local function PerformAttack()
+    if not _G.G_FastAttack then return end
+    if _G.G_FastAttackMode == "模式1" then
+        local Character = LocalPlayer.Character
+        local Equipped = Character and IsAlive(Character) and Character:FindFirstChildOfClass("Tool")
+        if not Equipped or Equipped.ToolTip == "Gun" then return end
+        PerformAttackMode1()
+    else
+        PerformAttackMode2()
+    end
+end
+
+task.spawn(function()
+    while true do
+        local startTime = tick()
+        pcall(PerformAttack)
+        if _G.G_FastAttackMode == "模式1" then
+             task.wait(0.3)
+        else
+             local elapsed = tick() - startTime
+             local waitTime = math.max(0.05 - elapsed, 0.001)
+             task.wait(waitTime)
+        end
+    end
 end)
 
+RJR[L("杀戮光环")]:Toggle({
+    Title = L("开启快速攻击"),
+    Value = _G.G_FastAttack,
+    Callback = function(v)
+        _G.G_FastAttack = v
+        SaveConfiguration()
+    end
+})
+
+RJR[L("杀戮光环")]:Dropdown({
+    Title = L("快速攻击模式"),
+    Values = {"模式1", "模式2(部分账号失效用)"},
+    Value = _G.G_FastAttackMode,
+    Callback = function(v)
+        _G.G_FastAttackMode = v
+        SaveConfiguration()
+    end
+})
+
+RJR[L("杀戮光环")]:Toggle({
+    Title = L("攻击怪物(此页面所有功能)"),
+    Value = _G.G_AttackMobs,
+    Callback = function(v) 
+        _G.G_AttackMobs = v 
+        SaveConfiguration()
+    end
+})
+
+RJR[L("杀戮光环")]:Toggle({
+    Title = L("攻击玩家(此页面所有功能)"),
+    Value = _G.G_AttackPlayers,
+    Callback = function(v) 
+        _G.G_AttackPlayers = v 
+        SaveConfiguration()
+    end
+})
+
+-- Main Cycle loop integration for Sea Events
 task.spawn(function()
     while Running() do
         local ok, err = pcall(Cycle)
@@ -883,4 +1399,4 @@ task.spawn(function()
     end
 end)
 
-print("[Lumu Sidd Hub - Beast Hunter Kaitun] started")
+print("[Siddhant C Event and PVP Hub] started successfully with Farm tab!")
